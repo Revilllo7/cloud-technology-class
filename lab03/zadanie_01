@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Funkcja do wyświetlania komunikatów
+info() {
+  echo -e "\n\033[1;34m[$1]\033[0m $2"
+}
+
+# Konfiguracja
+NGINX_CONTAINER="nginx-server"
+NGINX_PORT=8080
+NGINX_IMAGE="nginx:latest"
+HTML_CONTENT="<!DOCTYPE html><html><head><title>Test Page</title></head><body><h1>Witaj w Nginx!</h1></body></html>"
+
+info "KONFIGURACJA" "Tworzenie kontenera dla serwera Nginx"
+
+# Uruchomienie kontenera Nginx
+docker run -d --name $NGINX_CONTAINER -p $NGINX_PORT:80 $NGINX_IMAGE
+info "KONTENER" "Kontener Nginx uruchomiony na porcie $NGINX_PORT"
+
+# Tworzenie niestandardowej strony HTML
+docker exec $NGINX_CONTAINER sh -c "echo '$HTML_CONTENT' > /usr/share/nginx/html/index.html"
+info "ZAWARTOŚĆ" "Zmieniono zawartość strony Nginx"
+
+# Testowanie dostępności strony
+sleep 2
+info "TEST" "Sprawdzanie, czy serwer działa poprawnie"
+curl -s http://localhost:$NGINX_PORT | grep -q "Witaj w Nginx" && info "TEST" "Strona działa poprawnie" || echo -e "\n\033[1;31m[ERROR]\033[0m Strona nie zwróciła poprawnej treści"
+
+info "ZAKOŃCZENIE" "Testy zakończone. Serwer Nginx działa."
+
+echo -e "Aby zatrzymać kontener, wykonaj: docker stop $NGINX_CONTAINER"
+echo -e "Aby usunąć kontener, wykonaj: docker rm $NGINX_CONTAINER"

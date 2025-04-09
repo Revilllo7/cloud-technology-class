@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Funkcja do wyświetlania komunikatów
+info() {
+  echo -e "\n\033[1;34m[$1]\033[0m $2"
+}
+
+info-error() {
+  echo -e "\n\033[1;31m[$1]\033[0m $2"
+}
+
+# Konfiguracja
+NGINX_CONTAINER="nginx-server"
+NGINX_PORT=${1:-8080}  # Możliwość podania portu jako argument
+NGINX_IMAGE="nginx:latest"
+CONFIG_DIR="./nginx-config"
+CONFIG_FILE="$CONFIG_DIR/nginx.conf"
+
+# Tworzenie katalogu konfiguracji, jeśli nie istnieje
+mkdir -p $CONFIG_DIR
+
+# Domyślna konfiguracja Nginx, jeśli plik nie istnieje
+if [ ! -f "$CONFIG_FILE" ]; then
+  cat <<EOL > $CONFIG_FILE
+server {
+    listen 80;
+    server_name localhost;
+    location / {
+        root /usr/share/nginx/html;
+        index index.html;
+    }
+}
+EOL
+  info "KONFIGURACJA" "Utworzono domyślny plik konfiguracji Nginx w $CONFIG_FILE"
+fi
+
+info "KONFIGURACJA" "Tworzenie kontenera dla serwera Nginx na porcie $NGINX_PORT"
+
+docker run -d --name $NGINX_CONTAINER -p $NGINX_PORT:80 \
+  -v $(pwd)/$CONFIG_DIR/nginx.conf:/etc/nginx/conf.d/default.conf:ro \
+  $NGINX_IMAGE
+
+info "KONTENER" "Kontener Nginx uruchomiony na porcie $NGINX_PORT"
+
+# Testowanie serwera
+sleep 5
+info "TEST" "Sprawdzanie, czy serwer działa poprawnie"
+curl -s http://localhost:$NGINX_PORT | grep -q "Welcome" && \
+info "TEST" "Serwer Nginx działa poprawnie" || \
+info-error "ERROR" "Serwer nie działa prawidłowo"
+
+info "ZAKOŃCZENIE" "Testy zakończone. Serwer Nginx działa."
+
+echo -e "Aby zatrzymać kontener, wykonaj: docker stop $NGINX_CONTAINER"
+echo -e "Aby usunąć kontener, wykonaj: docker rm $NGINX_CONTAINER"
+

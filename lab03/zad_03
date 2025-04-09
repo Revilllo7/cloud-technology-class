@@ -1,0 +1,23 @@
+#!/bin/bash
+
+echo "Generowanie certyfikatów SSL..."
+mkdir -p nginx-ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout nginx-ssl/nginx-selfsigned.key \
+  -out nginx-ssl/nginx-selfsigned.crt \
+  -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+
+echo "Tworzenie sieci Docker..."
+docker network create my-network || true
+
+echo "Uruchamianie aplikacji Node.js..."
+docker build -t node-app ./node-app
+docker run -d --name node-app --network my-network node-app
+
+echo "Uruchamianie Nginx reverse proxy..."
+docker run -d --name nginx-proxy --network my-network -p 80:80 -p 443:443 \
+  -v $(pwd)/nginx-config/nginx.conf:/etc/nginx/nginx.conf:ro \
+  -v $(pwd)/nginx-config/default.conf:/etc/nginx/conf.d/default.conf:ro \
+  -v $(pwd)/nginx-ssl:/etc/nginx/ssl:ro \
+  -v $(pwd)/cache:/var/cache/nginx \
+  nginx
