@@ -1,0 +1,27 @@
+services:
+  db:
+    image: mongo:${MONGO_VERSION}
+    container_name: db
+    networks:
+      - net_A
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "${MONGO_PORT}:27017"
+
+  server:
+    build: ./backend
+    container_name: server
+    depends_on:
+      - db
+    networks:
+      - net_A
+    ports:
+      - "3003:3003"
+
+volumes:
+  mongo_data:
+
+networks:
+  net_A:
+    driver: bridge
