@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-a
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: microservice-a
+  template:
+    metadata:
+      labels:
+        app: microservice-a
+    spec:
+      containers:
+        - name: microservice-a
+          image: revilllo/microservice-a:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: SERVICE_B_HOST
+              value: microservice-b-service
+          resources:
+            requests:
+              memory: "250Mi"
+              cpu: "250m"
+            limits:
+              memory: "500Mi"
+              cpu: "500m"

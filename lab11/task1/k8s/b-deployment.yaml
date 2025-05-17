@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microservice-b
+  template:
+    metadata:
+      labels:
+        app: microservice-b
+    spec:
+      containers:
+        - name: microservice-b
+          image: revilllo/microservice-b:latest
+          ports:
+            - containerPort: 4000
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-config
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: mongo-password
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
