@@ -19,6 +19,7 @@ jobs:
 
       - name: Build Windows binary
         run: |
+          cd lab12/task3
           go build -o hello-windows.exe main.go
 
       - name: Login to DockerHub
