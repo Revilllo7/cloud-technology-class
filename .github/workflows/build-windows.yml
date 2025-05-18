@@ -1,0 +1,33 @@
+name: Build and Push Windows Image
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Build Windows binary
+        run: |
+          go build -o hello-windows.exe main.go
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build -f Dockerfile.windows -t ${{ secrets.DOCKERHUB_USERNAME }}/hello-console:windows .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/hello-console:windows
