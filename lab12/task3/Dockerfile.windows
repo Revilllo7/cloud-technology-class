@@ -1,0 +1,9 @@
+# escape=`
+FROM mcr.microsoft.com/windows/servercore:ltsc2022 AS builder
+WORKDIR /app
+COPY main.go .
+RUN go build -o hello.exe main.go
+
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2022
+COPY --from=builder C:/app/hello.exe C:/hello.exe
+CMD ["C:\\hello.exe"]
