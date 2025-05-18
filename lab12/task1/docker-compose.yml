@@ -1,0 +1,11 @@
+services:
+  rest-app:
+    build: .
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
